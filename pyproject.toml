@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "repl_python3_bundle-lib"
+version = "0.1.0"
+description = ""
+authors = ["stolati <<>>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+autopep8 = "^1.6.0"
+bundle = "^1.1.2"
+astunparse = "^1.6.3"
+pytest = "^6.2.5"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
