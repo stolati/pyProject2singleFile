@@ -108,7 +108,7 @@ def generate_single_main(
     #print(code_with_lines(output_text))
 
     output_content = codecleaner(output_text)
-    print(code_with_lines(output_content))
+    #print(code_with_lines(output_content))
     return output_content, modules
 
 
