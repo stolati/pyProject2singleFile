@@ -3,14 +3,13 @@
 import dataclasses
 import inspect
 import os.path
-import pprint
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass
 from importlib.machinery import SourceFileLoader
 from types import ModuleType
 from typing import List, Tuple
+import importlib
 
 # Keep it for other to access it
 from pybundle.export import ModuleDef
@@ -33,6 +32,7 @@ def remove_local_path(path):
     if os.path.isfile(path):
         path = os.path.dirname(path)
     sys.path = [p for p in sys.path if not p.startswith(path)]
+
 
 
 def moduleDef_from_module(module: ModuleType):
@@ -62,6 +62,10 @@ def load_file_as_module(file_path, module_name) -> Tuple[ModuleDefAndType]:
     module_inst = SourceFileLoader(module_name, file_path).load_module()
     return ModuleDefAndType(moduleDef_from_module(module_inst), module_inst)
 
+def load_name_as_module(module_name) -> Tuple[ModuleDefAndType]:
+  module_inst = importlib.import_module(module_name)
+  return ModuleDefAndType(moduleDef_from_module(module_inst), module_inst)
+
 
 def call_python_on_file(file_path):
     """Helper to execute a python without current local context."""
@@ -74,7 +78,8 @@ def call_python_on_file(file_path):
         environ = {k: v for k, v in os.environ.items() if 'PYTHON' not in k}
 
         subprocess.check_call(
-            ['/usr/bin/python3.8', temp_file.name],
+            [sys.executable, temp_file.name],
             cwd='/',
             env=environ,
         )
+

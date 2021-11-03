@@ -8,22 +8,36 @@ from typing import Dict, Tuple
 import autopep8
 
 import pybundle
-from pybundle.helpers import load_file_as_module, ModuleDefAndType
-from pybundle.stdlib import GetImportsThatHasBeenAdded
+from pybundle.helpers import load_file_as_module, ModuleDefAndType, load_name_as_module
+from pybundle.stdlib import GetImportsThatHasBeenAdded, with_clean_modules
 from pybundle.export import ModuleImporter, ModuleDef
 from pybundle.codecleaner import codecleaner
 
 
-def get_modules_imported_from_file(file_path, module_name='_main_') -> Dict[str, Tuple[ModuleDef, ModuleType]]:
-    gi_added = GetImportsThatHasBeenAdded()
+ModuleDict = Dict[str, Tuple[ModuleDef, ModuleType]]
 
-    with gi_added.catch_imports():
-        moduledefandtype = load_file_as_module(file_path, module_name)
+def get_modules_imported_from_file(file_path, module_name='_main_') -> ModuleDict:
+  gi_added = GetImportsThatHasBeenAdded()
 
-    modules_imported = gi_added.modules_imported.copy()
-    modules_imported['_main_'] = moduledefandtype
+  with with_clean_modules(), gi_added.catch_imports() as mobdules_imported:
+    moduledefandtype = load_file_as_module(file_path, module_name)
 
-    return modules_imported
+  modules_imported = gi_added.modules_imported.copy()
+  modules_imported['_main_'] = moduledefandtype
+
+  return modules_imported
+
+def get_modules_imported_from_import(module_name) -> ModuleDict:
+  gi_added = GetImportsThatHasBeenAdded()
+
+  with with_clean_modules(), gi_added.catch_imports() as mobdules_imported:
+    moduledefandtype = load_name_as_module(module_name)
+
+  modules_imported = gi_added.modules_imported.copy()
+  modules_imported[moduledefandtype.module_def.name] = moduledefandtype
+
+  return modules_imported
+
 
 
 def create_fake_modules(module_names) -> Dict[str, ModuleDefAndType]:
@@ -56,30 +70,51 @@ def _pprint_modules(input: Dict[str, ModuleDefAndType], variable_name: str) -> s
         for k, mdt in input.items()
     ])
 
-    lines = extract_sources + ['', f'{variable_name} = {{'] + modules_defs + ['}']
+    lines = extract_sources + ['', variable_name + ' = {'] + modules_defs + ['}']
 
     return '\n'.join(lines)
 
+def get_python_exec():
+  return 'python3.8'  # TODO use sys.version_info
 
-def generate_single_main(import_path: str, code_to_execute: str = '', fakes=[]) -> None:
-    modules = get_modules_imported_from_file(file_path)
-    fake_modules = create_fake_modules(fakes)
+def generate_single_main(
+  module_name: str,
+  is_module_main: bool = False,
+  code_to_execute: str = '',
+  fake_modules=[],
+  python_exec = None,
+  ) -> Tuple[str, ModuleDict]:
+    # TODO : handle is_module_main
+
+    modules = get_modules_imported_from_import(module_name)
+
+    fake_modules = create_fake_modules(fake_modules)
 
     modules = dict(**modules, **fake_modules)
 
-    export = inspect.getsource(bundle.export)
+    export = inspect.getsource(pybundle.export)
 
     output_lines = [
-        "#!/usr/bin/env python3.8",
+        f"#!/usr/bin/env {get_python_exec()}",
         export,
         _pprint_modules(modules, 'MODULES_DEFS'),
         f'ModuleImporter.install(MODULES_DEFS)',
         code_to_execute,
     ]
 
-    output_content = codecleaner('\n\n'.join(output_lines))
+    # Debug statement
+    output_text = '\n\n'.join(output_lines)
 
-    with open(output_file, 'w') as f:
-        f.write(output_content)
+    #print(code_with_lines(output_text))
 
-    return modules
+    output_content = codecleaner(output_text)
+    print(code_with_lines(output_content))
+    return output_content, modules
+
+
+def code_with_lines(code):
+    return '\n'.join(
+      f'L{i+1}  {l}' for i, l in enumerate(code.split('\n'))
+    )
+
+

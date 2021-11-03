@@ -1,21 +1,36 @@
 
+import importlib
 import unittest
+import pybundle.main
+from pybundle.stdlib import with_clean_modules, with_clean_path
+import pprint
 
-class TestStringMethods(unittest.TestCase):
 
-    def test_upper(self):
-        self.assertEqual('foo'.upper(), 'FOO')
+import_path = 'tests.single_file_import.main'
 
-    def test_isupper(self):
-        self.assertTrue('FOO'.isupper())
-        self.assertFalse('Foo'.isupper())
+class TestBundleWorks(unittest.TestCase):
 
-    def test_split(self):
-        s = 'hello world'
-        self.assertEqual(s.split(), ['hello', 'world'])
-        # check that s.split fails when the separator is not a string
-        with self.assertRaises(TypeError):
-            s.split(2)
+  def test_upper(self):
+
+    code = '\n'.join([
+      f'from {import_path} import logs_extractions',
+    ])
+
+    expected = importlib.import_module(import_path).logs_extractions
+
+    output_content, modules = pybundle.main.generate_single_main(import_path, code_to_execute = code)
+    
+    with with_clean_modules(), with_clean_path():
+      ast = compile(output_content, "code", "exec")
+      global_env = {}
+      exec_r = exec(ast, global_env)
+
+    result = global_env['logs_extractions']
+    pprint.pprint(expected)
+    pprint.pprint(result)
+
+    #self.assertListEqual(expected, result)
+
 
 if __name__ == '__main__':
     unittest.main()

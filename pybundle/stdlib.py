@@ -7,6 +7,7 @@ import sys
 import sysconfig
 from types import ModuleType
 from typing import Dict
+import contextlib
 
 from pybundle.helpers import ModuleDef, moduleDef_from_module, ModuleDefAndType
 
@@ -47,6 +48,19 @@ def get_std_lib():
                 res.add(os.path.join(top, nm)[len(std_lib) + 1:-3].replace(os.sep, '.'))
     return res
 
+
+
+def can_be_removed(loaded_module):
+  """Tell us if a module can be removed from sys.modules"""
+  # TODO : is there a better way of doing that ?
+  r, n, f = str(loaded_module), loaded_module.__name__, str(getattr(loaded_module, '__file__', None))
+  if '(built-in)' in r:
+    return False
+  if f.startswith(sys.base_prefix):
+    return False
+  if n == '__main__':
+    return False
+  return True
 
 def is_import_to_keep(fullname: str, module: ModuleType) -> bool:
     if fullname in KNOWN_STANDARD_LIBRARY:
@@ -93,3 +107,26 @@ class GetImportsThatHasBeenAdded:
             if autoclean:
                 for name in self._modules_imported.keys():
                     del sys.modules[name]
+                    
+@contextlib.contextmanager
+def with_clean_modules():
+  # Execute the code keeping only build-in modules.
+  modules_copy = sys.modules.copy()
+  for key, value in list(sys.modules.items()):
+    if can_be_removed(value):
+      del sys.modules[key]        
+  try:
+    yield None
+  finally:
+    sys.modules.update(modules_copy)
+
+@contextlib.contextmanager
+def with_clean_path():
+  path_copy = list(sys.path)
+  sys.path[:] = [p for p in sys.path if p.startswith(sys.base_prefix)]
+  try:
+    yield None
+  finally:
+    sys.path[:] = path_copy
+
+
