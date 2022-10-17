@@ -5,9 +5,7 @@ import textwrap
 from types import ModuleType
 from typing import Dict, Tuple
 
-import autopep8
-
-import pybundle
+import autopep
 from pybundle.helpers import load_file_as_module, ModuleDefAndType, load_name_as_module
 from pybundle.stdlib import GetImportsThatHasBeenAdded, with_clean_modules
 from pybundle.export import ModuleImporter, ModuleDef

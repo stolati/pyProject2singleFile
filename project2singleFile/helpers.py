@@ -12,7 +12,7 @@ from typing import List, Tuple
 import importlib
 
 # Keep it for other to access it
-from pybundle.export import ModuleDef
+from project2singleFile.export import ModuleDef
 
 
 @dataclasses.dataclass(frozen=True)
