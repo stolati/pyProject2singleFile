@@ -1,8 +1,8 @@
 
 import importlib
 import unittest
-import pybundle.main
-from pybundle.stdlib import with_clean_modules, with_clean_path
+import project2singleFile.main as bundle_main
+from project2singleFile.stdlib import with_clean_modules, with_clean_path
 from dataclasses import asdict
 from tests.logger import LogEvent
 
@@ -36,7 +36,7 @@ class TestBundleWorks(unittest.TestCase):
     code = '\n'.join([
       f'from {import_path} import logs_extractions',
     ])
-    output_content, _ = pybundle.main.generate_single_main(import_path, code_to_execute = code)
+    output_content, _ = bundle_main.generate_single_main(import_path, code_to_execute = code)
     result = _get_globals_from_code(output_content)['logs_extractions']
 
     # LogEvent objects are from different types.

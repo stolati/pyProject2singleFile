@@ -1,17 +1,20 @@
 [tool.poetry]
 name = "project2singleFile"
-version = "0.1.0"
+version = "0.0.2"
 description = ""
-authors = ["stolati <<>>"]
+authors = ["stolati <<stolati@gmail.com>>"]
+packages = [
+    { include = "project2singleFile" },
+]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-autopep8 = "^1.6.0"
-bundle = "^1.1.2"
-astunparse = "^1.6.3"
+python = "^3.8" # 3.8 is very specific for the web version.
+astunparse = "^1.6.3" # Needed for transforming some AST into python code.
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
+autopep8 = "^1.6.0" # To validate the code.
+twine = "^4.0.1" # publish packages
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

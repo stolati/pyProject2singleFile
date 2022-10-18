@@ -1,15 +1,12 @@
 import inspect
-import pprint
-import sys
-import textwrap
 from types import ModuleType
 from typing import Dict, Tuple
 
-import autopep
-from pybundle.helpers import load_file_as_module, ModuleDefAndType, load_name_as_module
-from pybundle.stdlib import GetImportsThatHasBeenAdded, with_clean_modules
-from pybundle.export import ModuleImporter, ModuleDef
-from pybundle.codecleaner import codecleaner
+from . import export as bundle_export
+from .helpers import load_file_as_module, ModuleDefAndType, load_name_as_module
+from .stdlib import GetImportsThatHasBeenAdded, with_clean_modules
+from .export import ModuleImporter, ModuleDef
+from .codecleaner import codecleaner
 
 
 ModuleDict = Dict[str, Tuple[ModuleDef, ModuleType]]
@@ -90,7 +87,7 @@ def generate_single_main(
 
     modules = dict(**modules, **fake_modules)
 
-    export = inspect.getsource(pybundle.export)
+    export = inspect.getsource(bundle_export)
 
     output_lines = [
         f"#!/usr/bin/env {get_python_exec()}",

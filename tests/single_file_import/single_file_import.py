@@ -1,2 +1,2 @@
 from tests.logger import Logger
-Logger.log()
+Logger.log("Single file import")

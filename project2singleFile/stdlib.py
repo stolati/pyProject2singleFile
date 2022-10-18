@@ -9,7 +9,7 @@ from types import ModuleType
 from typing import Dict
 import contextlib
 
-from pybundle.helpers import ModuleDef, moduleDef_from_module, ModuleDefAndType
+from .helpers import ModuleDef, moduleDef_from_module, ModuleDefAndType
 
 BUILTINS = sys.builtin_module_names
 
